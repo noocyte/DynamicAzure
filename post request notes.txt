@@ -1,8 +1,8 @@
-POST:
-
 curl -X POST -H "Content-Type:application/json" -d "{Name: 'stuff
-', Age: 37, id:'2'}" http://localhost:2540/api/omv/location
+', Age: 37}" http://localhost:2540/api/omv/location -D -
 
-GET:
+curl -X PUT -H "Content-Type:application/json" -d "{Name: 'stuff
+', Age: 37}" http://localhost:2540/api/omv/location/abc
+
 curl -H "Content-Type: application/json" http://localhost:2540/ap
 i/omv/location/4

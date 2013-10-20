@@ -54,7 +54,7 @@ namespace DynamicAzure.Controllers
         }
 
         // POST api/entity
-        public void Post(string client, string entity, dynamic dynamicObj)
+        public HttpResponseMessage Post(string client, string entity, dynamic dynamicObj)
         {
             // make sure the table has been created
             var tablename = string.Format("{0}{1}", client, entity);
@@ -72,6 +72,12 @@ namespace DynamicAzure.Controllers
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
+
+
+            string uri = Url.Link("DefaultApi", new { id = rowKey, controller = "Entity", client = client, entity = entity });
+            var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
+            response.Headers.Location = new Uri(uri);
+            return response;
         }
 
         // DELETE api/entity/5
