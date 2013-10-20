@@ -29,23 +29,24 @@ namespace DynamicAzure.Controllers
             var tableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
 
             // make sure the table has been created
-            var tablename = string.Format("{0}_{1}", client, entity);
+            var tablename = string.Format("{0}{1}", client, entity);
             tableClient.TryCreateTable(tablename);
 
             // get a table reference (this does not make any request)
             var table = tableClient[tablename];
 
             // insert an entity
+            var rowKey = Guid.NewGuid().ToString();
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
-                RowKey = Guid.NewGuid().ToString(),
+                RowKey = rowKey,
                 MyField = "foo bar",
                 MyIntField = 1337
             });
 
             // get an entity
-            var entityVal = table.Query("PartitionKey", "RowKey").First();
+            var entityVal = table.Query("PartitionKey", rowKey).First();
 
             // update
             entityVal.MyField = "new value";
