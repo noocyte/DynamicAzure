@@ -51,15 +51,17 @@ namespace DynamicAzure.Models
 
         public static dynamic ConvertToSimpleObject(JObject obj)
         {
-            dynamic dynObj = new ExpandoObject();
-            var p = dynObj as IDictionary<String, object>;
+            //dynamic dynObj = new ExpandoObject();
+            //var p = dynObj as IDictionary<String, object>;
+
+            dynamic dynObj = new Dictionary<String, object>();
 
             foreach (var prop in obj.Properties())
             {
                 if (prop.Value is JArray)
                     continue;
 
-                p[prop.Name] = prop.Value.Value<string>();
+                dynObj[prop.Name] = prop.Value.Value<object>().ToString();
             }
 
             return dynObj;

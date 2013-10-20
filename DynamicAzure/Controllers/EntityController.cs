@@ -76,19 +76,21 @@ namespace DynamicAzure.Controllers
 
             dynamicObj.PartitionKey = "PK";
             dynamicObj.RowKey = id;
+            dynamicObj.Timestamp = DateTime.Now;
+            dynamicObj.ETag = "something";
 
             var simpleObject = JsonSubObjectsTraverser.ConvertToSimpleObject(dynamicObj);
 
-            currentTable.Insert(simpleObject);
+           // currentTable.Insert(simpleObject);
 
             foreach (var entity in objs.Keys)
             {
-                var entityId = entity.Split('_')[2];
+                var entityId = entity.Split('_')[1];
                 var enityName = entity.Split('_')[0];
                 var table = GetTable(enityName);
                 var obj = objs[entity];
-                obj.PartitionKey = id;
-                obj.RowKey = entityId;
+                obj["PartitionKey"] = id;
+                obj["RowKey"] = entityId;
 
                 table.Insert(obj);
             }
