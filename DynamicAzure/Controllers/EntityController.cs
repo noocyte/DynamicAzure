@@ -47,6 +47,16 @@ namespace DynamicAzure.Controllers
             // get a table reference (this does not make any request)
             var table = TableClient[tablename];
 
+            InsertObject(id, dynamicObj, table);
+
+            string uri = Url.Link("DefaultApi", new { id = id, controller = "Entity", client = client, entity = entity });
+            var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
+            response.Headers.Location = new Uri(uri);
+            return response;
+        }
+
+        private static void InsertObject(string id, dynamic dynamicObj, CyanTable table)
+        {
             // insert an entity
             table.Insert(new
             {
@@ -55,11 +65,6 @@ namespace DynamicAzure.Controllers
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
-
-            string uri = Url.Link("DefaultApi", new { id = id, controller = "Entity", client = client, entity = entity });
-            var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
-            response.Headers.Location = new Uri(uri);
-            return response;
         }
 
         // POST api/entity
@@ -74,13 +79,7 @@ namespace DynamicAzure.Controllers
 
             // insert an entity
             var rowKey = Guid.NewGuid().ToString(); // get proper UXID!
-            table.Insert(new
-            {
-                PartitionKey = "PartitionKey",
-                RowKey = rowKey,
-                Name = dynamicObj.Name.Value,
-                Age = dynamicObj.Age.Value
-            });
+            InsertObject(rowKey, dynamicObj, table);
 
             string uri = Url.Link("DefaultApi", new { id = rowKey, controller = "Entity", client = client, entity = entity });
             var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
