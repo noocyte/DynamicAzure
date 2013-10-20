@@ -1,6 +1,8 @@
-User-Agent: Fiddler
-Content-Type: application/json
-Host: localhost:2540
-Content-Length: 23
+POST:
 
-{"somevalue":"another"}
+curl -X POST -H "Content-Type:application/json" -d "{Name: 'stuff
+', Age: 37, id:'2'}" http://localhost:2540/api/omv/location
+
+GET:
+curl -H "Content-Type: application/json" http://localhost:2540/ap
+i/omv/location/4

@@ -18,13 +18,19 @@ namespace DynamicAzure.Controllers
         }
 
         // GET api/entity/5
-        public string Get(int id)
+        public HttpResponseMessage Get(string client, string entity, string id)
         {
-            return "value";
+            var tableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
+            var tablename = string.Format("{0}{1}", client, entity);
+
+            // get a table reference (this does not make any request)
+            var table = tableClient[tablename];
+
+            return Request.CreateResponse(HttpStatusCode.OK, table.Query("PartitionKey", id));
         }
 
         // POST api/entity
-        public void Post(string client, string entity, JObject value)
+        public void Post(string client, string entity, dynamic dynamicObj)
         {
             var tableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
 
@@ -36,24 +42,24 @@ namespace DynamicAzure.Controllers
             var table = tableClient[tablename];
 
             // insert an entity
-            var rowKey = Guid.NewGuid().ToString();
+            var rowKey = dynamicObj.id.Value;
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
                 RowKey = rowKey,
-                MyField = "foo bar",
-                MyIntField = 1337
+                Name = dynamicObj.Name.Value,
+                Age = dynamicObj.Age.Value
             });
 
             // get an entity
-            var entityVal = table.Query("PartitionKey", rowKey).First();
+            //var entityVal = table.Query("PartitionKey", rowKey).First();
 
-            // update
-            entityVal.MyField = "new value";
-            table.Update(entityVal);
+            //// update
+            //entityVal.MyField = "new value";
+            //table.Update(entityVal);
 
             // delete
-            table.Delete(entityVal);
+            //table.Delete(entityVal);
         }
 
         // PUT api/entity/5
