@@ -43,6 +43,8 @@ local.properties
 
 # Build results
 
+packages/*
+!packages/repositories.config
 [Dd]ebug/
 [Rr]elease/
 x64/
