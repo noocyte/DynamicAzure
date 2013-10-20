@@ -1,4 +1,5 @@
 ﻿using Cyan;
+using DynamicAzure.Models;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
@@ -10,12 +11,13 @@ namespace DynamicAzure.Controllers
     public class EntityController : ApiController
     {
         CyanClient TableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
+        internal string Client { get; set; }
 
         // GET api/entity
         public HttpResponseMessage Get(string client, string entity)
         {
-            var tablename = VerifyTable(client, entity);
-            var table = GetTable(tablename);
+            this.Client = client;
+            var table = GetTable(entity);
 
             return Request.CreateResponse(HttpStatusCode.OK, table.Query("PartitionKey"));
         }
@@ -23,8 +25,8 @@ namespace DynamicAzure.Controllers
         // GET api/entity/5
         public HttpResponseMessage Get(string client, string entity, string id)
         {
-            var tablename = VerifyTable(client, entity);
-            var table = GetTable(tablename);
+            this.Client = client;
+            var table = GetTable(entity);
 
             return Request.CreateResponse(HttpStatusCode.OK, table.Query("PartitionKey", id));
         }
@@ -32,8 +34,8 @@ namespace DynamicAzure.Controllers
         // PUT api/entity/5
         public HttpResponseMessage Put(string id, string client, string entity, dynamic dynamicObj)
         {
-            var tablename = VerifyTable(client, entity);
-            var table = GetTable(tablename);
+            this.Client = client;
+            var table = GetTable(entity);
 
             InsertObject(id, dynamicObj, table);
             return Respond(client, entity, dynamicObj, id);
@@ -42,8 +44,8 @@ namespace DynamicAzure.Controllers
         // POST api/entity
         public HttpResponseMessage Post(string client, string entity, dynamic dynamicObj)
         {
-            var tablename = VerifyTable(client, entity);
-            var table = GetTable(tablename);
+            this.Client = client;
+            var table = GetTable(entity);
 
             var rowKey = Guid.NewGuid().ToString(); // get proper UXID!
             InsertObject(rowKey, dynamicObj, table);
@@ -51,17 +53,13 @@ namespace DynamicAzure.Controllers
             return Respond(client, entity, dynamicObj, rowKey);
         }
 
-        private CyanTable GetTable(string tablename)
+        private CyanTable GetTable(string entity)
         {
-            var table = TableClient[tablename];
-            return table;
-        }
-
-        private string VerifyTable(string client, string entity)
-        {
-            var tablename = string.Format("{0}{1}", client, entity);
+            var tablename = string.Format("{0}{1}", this.Client, entity);
             TableClient.TryCreateTable(tablename);
-            return tablename;
+            var table = TableClient[tablename];
+
+            return table;
         }
 
         private HttpResponseMessage Respond(string client, string entity, dynamic dynamicObj, string rowKey)
@@ -72,15 +70,28 @@ namespace DynamicAzure.Controllers
             return response;
         }
 
-        private static void InsertObject(string id, dynamic dynamicObj, CyanTable table)
+        private void InsertObject(string id, dynamic dynamicObj, CyanTable currentTable)
         {
-            table.Insert(new
+            var objs = JsonSubObjectsTraverser.Traverse(dynamicObj as JObject);
+
+            dynamicObj.PartitionKey = "PK";
+            dynamicObj.RowKey = id;
+
+            var simpleObject = JsonSubObjectsTraverser.ConvertToSimpleObject(dynamicObj);
+
+            currentTable.Insert(simpleObject);
+
+            foreach (var entity in objs.Keys)
             {
-                PartitionKey = "PartitionKey",
-                RowKey = id,
-                Name = dynamicObj.Name.Value,
-                Age = dynamicObj.Age.Value
-            });
+                var entityId = entity.Split('_')[2];
+                var enityName = entity.Split('_')[0];
+                var table = GetTable(enityName);
+                var obj = objs[entity];
+                obj.PartitionKey = id;
+                obj.RowKey = entityId;
+
+                table.Insert(obj);
+            }
         }
     }
 }
