@@ -11,6 +11,10 @@ namespace DynamicAzure.Controllers
 {
     public class EntityController : ApiController
     {
+
+        CyanClient TableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
+
+
         // GET api/entity
         public IEnumerable<string> Get()
         {
@@ -20,29 +24,26 @@ namespace DynamicAzure.Controllers
         // GET api/entity/5
         public HttpResponseMessage Get(string client, string entity, string id)
         {
-            var tableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
             var tablename = string.Format("{0}{1}", client, entity);
 
             // get a table reference (this does not make any request)
-            var table = tableClient[tablename];
+            var table = TableClient[tablename];
 
             return Request.CreateResponse(HttpStatusCode.OK, table.Query("PartitionKey", id));
         }
 
-        // POST api/entity
-        public void Post(string client, string entity, dynamic dynamicObj)
+        // PUT api/entity/5
+        public void Put(int id, string client, string entity, dynamic dynamicObj)
         {
-            var tableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
-
             // make sure the table has been created
             var tablename = string.Format("{0}{1}", client, entity);
-            tableClient.TryCreateTable(tablename);
+            TableClient.TryCreateTable(tablename);
 
             // get a table reference (this does not make any request)
-            var table = tableClient[tablename];
+            var table = TableClient[tablename];
 
             // insert an entity
-            var rowKey = dynamicObj.id.Value;
+            var rowKey = id;
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
@@ -50,21 +51,27 @@ namespace DynamicAzure.Controllers
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
-
-            // get an entity
-            //var entityVal = table.Query("PartitionKey", rowKey).First();
-
-            //// update
-            //entityVal.MyField = "new value";
-            //table.Update(entityVal);
-
-            // delete
-            //table.Delete(entityVal);
         }
 
-        // PUT api/entity/5
-        public void Put(int id, [FromBody]string value)
+        // POST api/entity
+        public void Post(string client, string entity, dynamic dynamicObj)
         {
+            // make sure the table has been created
+            var tablename = string.Format("{0}{1}", client, entity);
+            TableClient.TryCreateTable(tablename);
+
+            // get a table reference (this does not make any request)
+            var table = TableClient[tablename];
+
+            // insert an entity
+            var rowKey = Guid.NewGuid().ToString();
+            table.Insert(new
+            {
+                PartitionKey = "PartitionKey",
+                RowKey = rowKey,
+                Name = dynamicObj.Name.Value,
+                Age = dynamicObj.Age.Value
+            });
         }
 
         // DELETE api/entity/5
