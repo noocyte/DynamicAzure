@@ -16,9 +16,14 @@ namespace DynamicAzure.Controllers
 
 
         // GET api/entity
-        public IEnumerable<string> Get()
+        public HttpResponseMessage Get(string client, string entity)
         {
-            return new string[] { "value1", "value2" };
+            var tablename = string.Format("{0}{1}", client, entity);
+
+            // get a table reference (this does not make any request)
+            var table = TableClient[tablename];
+
+            return Request.CreateResponse(HttpStatusCode.OK, table.Query("PartitionKey"));
         }
 
         // GET api/entity/5
@@ -33,7 +38,7 @@ namespace DynamicAzure.Controllers
         }
 
         // PUT api/entity/5
-        public HttpResponseMessage Put(int id, string client, string entity, dynamic dynamicObj)
+        public HttpResponseMessage Put(string id, string client, string entity, dynamic dynamicObj)
         {
             // make sure the table has been created
             var tablename = string.Format("{0}{1}", client, entity);
@@ -43,16 +48,15 @@ namespace DynamicAzure.Controllers
             var table = TableClient[tablename];
 
             // insert an entity
-            var rowKey = id.ToString();
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
-                RowKey = rowKey,
+                RowKey = id,
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
 
-            string uri = Url.Link("DefaultApi", new { id = rowKey, controller = "Entity", client = client, entity = entity });
+            string uri = Url.Link("DefaultApi", new { id = id, controller = "Entity", client = client, entity = entity });
             var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
             response.Headers.Location = new Uri(uri);
             return response;
@@ -69,7 +73,7 @@ namespace DynamicAzure.Controllers
             var table = TableClient[tablename];
 
             // insert an entity
-            var rowKey = Guid.NewGuid().ToString();
+            var rowKey = Guid.NewGuid().ToString(); // get proper UXID!
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
@@ -77,7 +81,6 @@ namespace DynamicAzure.Controllers
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
-
 
             string uri = Url.Link("DefaultApi", new { id = rowKey, controller = "Entity", client = client, entity = entity });
             var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
