@@ -33,7 +33,7 @@ namespace DynamicAzure.Controllers
         }
 
         // PUT api/entity/5
-        public void Put(int id, string client, string entity, dynamic dynamicObj)
+        public HttpResponseMessage Put(int id, string client, string entity, dynamic dynamicObj)
         {
             // make sure the table has been created
             var tablename = string.Format("{0}{1}", client, entity);
@@ -43,7 +43,7 @@ namespace DynamicAzure.Controllers
             var table = TableClient[tablename];
 
             // insert an entity
-            var rowKey = id;
+            var rowKey = id.ToString();
             table.Insert(new
             {
                 PartitionKey = "PartitionKey",
@@ -51,6 +51,11 @@ namespace DynamicAzure.Controllers
                 Name = dynamicObj.Name.Value,
                 Age = dynamicObj.Age.Value
             });
+
+            string uri = Url.Link("DefaultApi", new { id = rowKey, controller = "Entity", client = client, entity = entity });
+            var response = Request.CreateResponse(HttpStatusCode.Created, dynamicObj as JObject);
+            response.Headers.Location = new Uri(uri);
+            return response;
         }
 
         // POST api/entity
