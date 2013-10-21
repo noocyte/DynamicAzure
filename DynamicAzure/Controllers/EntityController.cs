@@ -10,7 +10,7 @@ namespace DynamicAzure.Controllers
 {
     public class EntityController : ApiController
     {
-        CyanClient TableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
+        readonly CyanClient TableClient = new CyanClient("dynamicazure", "NWEBI6mTJihjtv2VqTNV2ImcVAJ6uc1mqz097C2qLINuHdApWvQ4woO/mNGHE4H5pt4ISzCfGTODc9wEUq2Ckw==");
         internal string Client { get; set; }
 
         // GET api/entity
@@ -74,25 +74,24 @@ namespace DynamicAzure.Controllers
         {
             var objs = JsonSubObjectsTraverser.Traverse(dynamicObj as JObject);
 
-            dynamicObj.PartitionKey = "PK";
-            dynamicObj.RowKey = id;
-            dynamicObj.Timestamp = DateTime.Now;
-            dynamicObj.ETag = "something";
-
             var simpleObject = JsonSubObjectsTraverser.ConvertToSimpleObject(dynamicObj);
 
-           // currentTable.Insert(simpleObject);
+            simpleObject.PartitionKey = "PK";
+            simpleObject.RowKey = id;
 
+            currentTable.Insert(simpleObject);
+           
             foreach (var entity in objs.Keys)
             {
                 var entityId = entity.Split('_')[1];
                 var enityName = entity.Split('_')[0];
                 var table = GetTable(enityName);
-                var obj = objs[entity];
-                obj["PartitionKey"] = id;
-                obj["RowKey"] = entityId;
+                simpleObject = objs[entity];
 
-                table.Insert(obj);
+                simpleObject.PartitionKey = id;
+                simpleObject.RowKey = entityId;
+
+                table.Insert(simpleObject);
             }
         }
     }

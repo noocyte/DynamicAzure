@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Cyan;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -49,22 +50,29 @@ namespace DynamicAzure.Models
             }
         }
 
-        public static dynamic ConvertToSimpleObject(JObject obj)
+        public static CyanEntity ConvertToSimpleObject(JObject obj)
         {
-            //dynamic dynObj = new ExpandoObject();
-            //var p = dynObj as IDictionary<String, object>;
-
-            dynamic dynObj = new Dictionary<String, object>();
+            var ce = new CyanEntity();
 
             foreach (var prop in obj.Properties())
             {
                 if (prop.Value is JArray)
                     continue;
 
-                dynObj[prop.Name] = prop.Value.Value<object>().ToString();
+                switch (prop.Name)
+                {
+                    case "PartitionKey":
+                    case "RowKey":
+                    case "Timestamp":
+                    case "ETag":
+                        break;
+                    default:
+                        ce.Fields.Add(prop.Name, prop.Value.Value<object>());
+                        break;
+                }
             }
 
-            return dynObj;
+            return ce;
         }
     }
 }
