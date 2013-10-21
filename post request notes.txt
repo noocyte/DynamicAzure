@@ -1,4 +1,4 @@
-curl -X POST -H "Content-Type:application/json" -d "{Name: 'Åge', Age: 37, Addresses: [{id:'a', street: 'heimdal'}, {id:'b', street: 'gronbakken'}]}" http://localhost:2540/api/omv/location -D -
+curl -X POST -H "Content-Type:application/json" -d "{Name: 'stuff', Age: 3.7, Born: '1981-04-05T14:30:30+02', Addresses: [{current: true,  street: 'heimdal', something: [{name:'blah'}, {name:'Foo'}], onething: [{ name:'blah'}, {name:'Foo'}]}, {street: 'gronbakken'}]}" http://localhost:2540/api/omv/location -D -
 
 curl -X PUT -H "Content-Type:application/json" -d "{Name: 'stuff', Age: 37}" http://localhost:2540/api/omv/location/abc
 

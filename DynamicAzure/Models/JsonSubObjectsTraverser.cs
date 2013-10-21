@@ -44,8 +44,21 @@ namespace DynamicAzure.Models
 
                 if (subObject != null)
                 {
+                    var p = subObject.Parent.Parent.Parent;
+                    subObject.Add("PartitionKey", ((dynamic)p).RowKey);
+                    JToken idToken;
+                    if (subObject.TryGetValue("id", out idToken))
+                    {
+                        subObject.Add("RowKey", idToken.Value<string>());
+                        subObject.Remove("id");
+                    }
+                    else
+                    {
+                        subObject.Add("RowKey", Guid.NewGuid().ToString()); // TODO UXID!
+                    }
+
                     // "events": [{ "id": "XI1BTWMDXR6X", ... }, { "id": "OK1JAWL7WWQS", ... }]
-                    foreignKeys.Add(String.Format("{0}_{1}", prop.Name, subObject.GetValue("id").Value<string>()), ConvertToSimpleObject(subObject));
+                    foreignKeys.Add(String.Format("{0}_{1}", prop.Name, subObject.GetValue("RowKey").Value<string>()), ConvertToSimpleObject(subObject));
                 }
             }
         }
@@ -54,17 +67,34 @@ namespace DynamicAzure.Models
         {
             var ce = new CyanEntity();
 
+            int numberOfChildElements = 0;
+
             foreach (var prop in obj.Properties())
             {
-                if (prop.Value is JArray)
-                    continue;
 
-                switch (prop.Name)
+                if (prop.Value is JArray)
                 {
-                    case "PartitionKey":
-                    case "RowKey":
-                    case "Timestamp":
-                    case "ETag":
+                    ce.Fields.Add(String.Format("ChildTable_{0}", numberOfChildElements), prop.Name);
+                    numberOfChildElements++;
+                    continue;
+                }
+
+                switch (prop.Value.Type.ToString())
+                {
+                    case "Boolean":
+                        ce.Fields.Add(prop.Name, prop.Value.Value<bool>());
+                        break;
+                    case "Float":
+                        ce.Fields.Add(prop.Name, prop.Value.Value<double>());
+                        break;
+                    case "Integer":
+                        ce.Fields.Add(prop.Name, prop.Value.Value<int>());
+                        break;
+                    case "String":
+                        ce.Fields.Add(prop.Name, prop.Value.Value<string>());
+                        break;
+                    case "Date":
+                        ce.Fields.Add(prop.Name, prop.Value.Value<DateTime>());
                         break;
                     default:
                         ce.Fields.Add(prop.Name, prop.Value.Value<object>());

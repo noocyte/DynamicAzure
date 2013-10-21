@@ -12,8 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{351E08
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyan", "..\..\..\Users\jarle_000\Downloads\cyannet-17477\Cyan\Cyan\Cyan.csproj", "{D52CD49C-4D1F-4925-9E31-CE0B9B054C7A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,10 +22,6 @@ Global
 		{ED217361-18A1-45EE-92C7-E125E11419E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED217361-18A1-45EE-92C7-E125E11419E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED217361-18A1-45EE-92C7-E125E11419E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D52CD49C-4D1F-4925-9E31-CE0B9B054C7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D52CD49C-4D1F-4925-9E31-CE0B9B054C7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D52CD49C-4D1F-4925-9E31-CE0B9B054C7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D52CD49C-4D1F-4925-9E31-CE0B9B054C7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

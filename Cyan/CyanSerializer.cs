@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Xml;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Cyan
 {
@@ -41,12 +42,11 @@ namespace Cyan
 
         static Tuple<string, string> SerializeProperty(object value)
         {
-            var type = value.GetType();
-
-            var typeName = type.Name;
+            var typeName = value.GetType().Name;
 
             string azureTypeName;
             string serialized;
+
             switch (typeName)
             {
                 case "Byte[]":
@@ -70,6 +70,7 @@ namespace Cyan
                     serialized = XmlConvert.ToString((Guid)value);
                     break;
                 case "Int32":
+                case "Integer":
                     azureTypeName = "Edm.Int32";
                     serialized = value.ToString();
                     break;

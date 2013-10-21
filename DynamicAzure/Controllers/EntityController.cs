@@ -72,24 +72,19 @@ namespace DynamicAzure.Controllers
 
         private void InsertObject(string id, dynamic dynamicObj, CyanTable currentTable)
         {
-            var objs = JsonSubObjectsTraverser.Traverse(dynamicObj as JObject);
-
+            dynamicObj.PartitionKey = "PK";
+            dynamicObj.RowKey = id;
             var simpleObject = JsonSubObjectsTraverser.ConvertToSimpleObject(dynamicObj);
 
-            simpleObject.PartitionKey = "PK";
-            simpleObject.RowKey = id;
-
             currentTable.Insert(simpleObject);
+
+            var objs = JsonSubObjectsTraverser.Traverse(dynamicObj as JObject);
            
             foreach (var entity in objs.Keys)
             {
-                var entityId = entity.Split('_')[1];
                 var enityName = entity.Split('_')[0];
                 var table = GetTable(enityName);
                 simpleObject = objs[entity];
-
-                simpleObject.PartitionKey = id;
-                simpleObject.RowKey = entityId;
 
                 table.Insert(simpleObject);
             }
